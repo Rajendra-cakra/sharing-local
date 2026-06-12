@@ -1,0 +1,218 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Local Share</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #0f172a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            padding: 30px 15px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .card {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            border: none;
+            outline: none;
+            resize: vertical;
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 16px;
+            background: #334155;
+            color: white;
+        }
+
+        input[type="file"] {
+            margin-top: 15px;
+            width: 100%;
+            color: white;
+        }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            background: #3b82f6;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .message {
+            background: #334155;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            word-wrap: break-word;
+        }
+
+        .message p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .message a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .message a:hover {
+            text-decoration: underline;
+        }
+
+        .empty {
+            opacity: 0.6;
+            text-align: center;
+            padding: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h1>Local Share</h1>
+
+        <textarea id="text" placeholder="Tulis pesan..."></textarea>
+
+        <input type="file" id="file">
+
+        <button onclick="sendText()">
+            Kirim
+        </button>
+
+    </div>
+
+    <div class="card">
+
+        <div id="result">
+            <div class="empty">
+                Belum ada pesan
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+let lastData = "";
+
+async function sendText() {
+
+    const text = document.getElementById('text').value;
+
+    const fileInput = document.getElementById('file');
+
+    const formData = new FormData();
+
+    formData.append('text', text);
+
+    if (fileInput.files[0]) {
+        formData.append('file', fileInput.files[0]);
+    }
+
+    await fetch('/send', {
+        method: 'POST',
+        body: formData
+    });
+
+    document.getElementById('text').value = "";
+    document.getElementById('file').value = "";
+}
+
+async function loadText() {
+
+    const response = await fetch('/get');
+
+    const data = await response.json();
+
+    const jsonText = JSON.stringify(data);
+
+    if (jsonText !== lastData) {
+
+        lastData = jsonText;
+
+        let html = "";
+
+        if (data.length === 0) {
+
+            html = `
+                <div class="empty">
+                    Belum ada pesan
+                </div>
+            `;
+        }
+
+        data.slice().reverse().forEach(item => {
+
+            html += `
+                <div class="message">
+                    <p>${item.text}</p>
+            `;
+
+            if (item.file) {
+
+                html += `
+                    <a href="/uploads/${item.file}" target="_blank">
+                        📁 ${item.file}
+                    </a>
+                `;
+            }
+
+            html += `</div>`;
+        });
+
+        document.getElementById('result').innerHTML = html;
+    }
+}
+
+setInterval(loadText, 1000);
+
+</script>
+
+</body>
+</html>
