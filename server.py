@@ -9,7 +9,7 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 
 # =========================
-# AUTO DETECT IP
+# AUTO DETECT IP SERVER
 # =========================
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -30,7 +30,7 @@ print("===================================")
 print()
 
 # =========================
-# GENERATE QR
+# GENERATE QR DARI IP SERVERNYA
 # =========================
 
 img = qrcode.make(url)
